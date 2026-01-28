@@ -1,45 +1,56 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React from 'react';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { NavigationContainer } from '@react-navigation/native';
+import { StatusBar, ActivityIndicator, View, StyleSheet } from 'react-native';
+import MainNavigator from './src/navigation/MainNavigator';
+import AuthNavigator from './src/navigation/AuthNavigator';
+import { CartProvider } from './src/context/CartContext';
+import { RestaurantProvider } from './src/context/RestaurantContext';
+import { AuthProvider, useAuth } from './src/context/AuthContext';
+import { ThemeProvider } from './src/context/ThemeContext';
+import Colors from './src/constants/Colors';
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+const AppContent = () => {
+  const { user, loading } = useAuth();
 
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </View>
+    );
+  }
 
+  return (
+    <NavigationContainer>
+      <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
+      {user ? <MainNavigator /> : <AuthNavigator />}
+    </NavigationContainer>
+  );
+};
+
+const App = () => {
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
+      <AuthProvider>
+        <RestaurantProvider>
+          <CartProvider>
+            <ThemeProvider>
+              <AppContent />
+            </ThemeProvider>
+          </CartProvider>
+        </RestaurantProvider>
+      </AuthProvider>
     </SafeAreaProvider>
   );
-}
-
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
-
-  return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
+};
 
 export default App;
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
